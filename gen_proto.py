@@ -1,6 +1,6 @@
 class ProtoConfig:
-    def __init__(self, subject_tag, owner, description_line):
-        # Propiedades comunes
+    def __init__(self, subject_tag, owner):
+        # Common properties
         self.misc_options = "UTF8_HEADER"
         self.change_log = "Yes"
         self.attachments = "Yes"
@@ -20,7 +20,6 @@ class ProtoConfig:
         self.notebook_active = None
         self.notebook_path = None
         self.notebook_frequency = None
-        self.description_line = description_line
 
     def set_notebook(self, active, path=None, frequency=None):
         self.notebook_active = active
@@ -32,12 +31,10 @@ class ProtoConfig:
             return f"{self.notebook_active},{self.notebook_path},{self.notebook_frequency}"
         return self.notebook_active
 
-    def write_to_file(self, filename):
+    def write_to_file(self, filename, description_line):
         with open(filename, 'w') as file:
-            file.write("*\n")
-            file.write("* {}\n".format(self.description_line))
-            file.write("*\n")
-            file.write("*\n")
+            # Writing the header
+            file.write(generate_header(description_line))
             file.write("* .HH ON\n")
             for key in sorted(vars(self)):
                 if key == "notebook_active":
@@ -47,10 +44,12 @@ class ProtoConfig:
             file.write("* .HH OFF\n")
             file.write("*\n")
 
+def generate_header(description_line):
+    return f"*\n* {description_line}\n*\n*\n"
+
 class ProtoDistr(ProtoConfig):
     def __init__(self):
-        super().__init__(subject_tag='"PROTO-DISTR"', owner="owner1@test.com,owner2@test.com",
-                         description_line="Liste prototype de distribution (discussion) avec archives")
+        super().__init__(subject_tag='"PROTO-DISTR"', owner="owner1@test.com,owner2@test.com")
         self.send = "Private"
         self.reply_to = "List,Respect"
         self.review = "Private"
@@ -58,8 +57,7 @@ class ProtoDistr(ProtoConfig):
 
 class ProtoStd(ProtoConfig):
     def __init__(self):
-        super().__init__(subject_tag='"PROTO-STD"', owner="owner1@test.com,owner2@test.com",
-                         description_line="Liste prototype standard")
+        super().__init__(subject_tag='"PROTO-STD"', owner="owner1@test.com,owner2@test.com")
         self.send = "Owner"
         self.reply_to = "Sender,Respect"
         self.review = "Owner"
@@ -67,8 +65,7 @@ class ProtoStd(ProtoConfig):
 
 class ProtoStdArch(ProtoConfig):
     def __init__(self):
-        super().__init__(subject_tag='"PROTO-STD-ARCH"', owner="owner1@test.com, owner2@test.com",
-                         description_line="Prototype liste de diffusion avec archives")
+        super().__init__(subject_tag='"PROTO-STD-ARCH"', owner="owner1@test.com, owner2@test.com")
         self.send = "Confirm"
         self.reply_to = "Sender,Respect"
         self.review = "Owner"
@@ -76,20 +73,19 @@ class ProtoStdArch(ProtoConfig):
 
 class ProtoModr(ProtoConfig):
     def __init__(self):
-        super().__init__(subject_tag='"PROTO-MODR"', owner="owner1@test.com,owner2@test.com",
-                         description_line="Liste prototype avec moderateur")
+        super().__init__(subject_tag='"PROTO-MODR"', owner="owner1@test.com,owner2@test.com")
         self.send = "Editor,Hold,Confirm"
         self.reply_to = "List,Respect"
         self.review = "Private"
         self.set_notebook("Yes", "/home/listserv/lists/archives/proto-modr", "Monthly")
 
-# Crear instancias y escribir a archivos
+# Create instances and write to files
 proto_distr_instance = ProtoDistr()
 proto_std_instance = ProtoStd()
 proto_std_arch_instance = ProtoStdArch()
 proto_modr_instance = ProtoModr()
 
-proto_distr_instance.write_to_file("proto-distr.txt")
-proto_std_instance.write_to_file("proto-std.txt")
-proto_std_arch_instance.write_to_file("proto-std-arch.txt")
-proto_modr_instance.write_to_file("proto-modr.txt")
+proto_distr_instance.write_to_file("proto-distr.txt", "Liste prototype de distribution (discussion) avec archives")
+proto_std_instance.write_to_file("proto-std.txt", "Liste prototype standard")
+proto_std_arch_instance.write_to_file("proto-std-arch.txt", "Prototype liste de diffusion avec archives")
+proto_modr_instance.write_to_file("proto-modr.txt", "Liste prototype avec moderateur")
