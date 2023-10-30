@@ -1,5 +1,5 @@
 class ProtoConfig:
-    def __init__(self, subject_tag, owner):
+    def __init__(self, subject_tag, owner, description_line):
         # Propiedades comunes
         self.misc_options = "UTF8_HEADER"
         self.change_log = "Yes"
@@ -17,63 +17,71 @@ class ProtoConfig:
         self.confidential = "Yes"
         self.subject_tag = subject_tag
         self.owner = owner
+        self.notebook_active = None
+        self.notebook_path = None
+        self.notebook_frequency = None
+        self.description_line = description_line
 
-        # Establecer propiedades de notebook por defecto
-        self.notebook_active = "Yes"
-        list_name = self.subject_tag.replace('"', '').lower()
-        self.notebook_path = f"/home/listserv/lists/archives/{list_name}"
-        self.notebook_frequency = "Monthly"
+    def set_notebook(self, active, path=None, frequency=None):
+        self.notebook_active = active
+        self.notebook_path = path
+        self.notebook_frequency = frequency
+
+    def get_notebook(self):
+        if self.notebook_active == "Yes":
+            return f"{self.notebook_active},{self.notebook_path},{self.notebook_frequency}"
+        return self.notebook_active
 
     def write_to_file(self, filename):
         with open(filename, 'w') as file:
             file.write("*\n")
-            file.write(f"* {self.subject_tag}\n")
+            file.write("* {}\n".format(self.description_line))
             file.write("*\n")
             file.write("*\n")
             file.write("* .HH ON\n")
-
-            # Escribir propiedades en orden alfabético y respetando el formato de mayúsculas y minúsculas
             for key in sorted(vars(self)):
                 if key == "notebook_active":
-                    file.write(f'* Notebook= {self.notebook_active},{self.notebook_path},{self.notebook_frequency}\n')
+                    file.write(f'* Notebook= {self.get_notebook()}\n')
                 else:
                     file.write(f'* {key.replace("_", "-").title()}= {vars(self)[key]}\n')
-
             file.write("* .HH OFF\n")
             file.write("*\n")
 
-
 class ProtoDistr(ProtoConfig):
     def __init__(self):
-        super().__init__(subject_tag='"PROTO-DISTR"', owner="owner1@test.com,owner2@test.com")
+        super().__init__(subject_tag='"PROTO-DISTR"', owner="owner1@test.com,owner2@test.com",
+                         description_line="Liste prototype de distribution (discussion) avec archives")
         self.send = "Private"
         self.reply_to = "List,Respect"
         self.review = "Private"
-
+        self.set_notebook("Yes", "/home/listserv/lists/archives/proto-distr", "Monthly")
 
 class ProtoStd(ProtoConfig):
     def __init__(self):
-        super().__init__(subject_tag='"PROTO-STD"', owner="owner1@test.com,owner2@test.com")
+        super().__init__(subject_tag='"PROTO-STD"', owner="owner1@test.com,owner2@test.com",
+                         description_line="Liste prototype standard")
         self.send = "Owner"
         self.reply_to = "Sender,Respect"
         self.review = "Owner"
-
+        self.notebook_active = "No"
 
 class ProtoStdArch(ProtoConfig):
     def __init__(self):
-        super().__init__(subject_tag='"PROTO-STD-ARCH"', owner="owner1@test.com, owner2@test.com")
+        super().__init__(subject_tag='"PROTO-STD-ARCH"', owner="owner1@test.com, owner2@test.com",
+                         description_line="Prototype liste de diffusion avec archives")
         self.send = "Confirm"
         self.reply_to = "Sender,Respect"
         self.review = "Owner"
-
+        self.set_notebook("Yes", "/home/listserv/lists/archives/proto-std-arch", "Monthly")
 
 class ProtoModr(ProtoConfig):
     def __init__(self):
-        super().__init__(subject_tag='"PROTO-MODR"', owner="owner1@test.com,owner2@test.com")
+        super().__init__(subject_tag='"PROTO-MODR"', owner="owner1@test.com,owner2@test.com",
+                         description_line="Liste prototype avec moderateur")
         self.send = "Editor,Hold,Confirm"
         self.reply_to = "List,Respect"
         self.review = "Private"
-
+        self.set_notebook("Yes", "/home/listserv/lists/archives/proto-modr", "Monthly")
 
 # Crear instancias y escribir a archivos
 proto_distr_instance = ProtoDistr()
