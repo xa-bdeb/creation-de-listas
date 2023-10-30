@@ -1,5 +1,4 @@
 from pathlib import Path
-from pathlib import Path
 
 # Constantes
 BASE_NOTEBOOK_PATH = Path("/home/listserv/lists/archives")
@@ -170,7 +169,7 @@ def main():
 
     # Extracting necessary data from config_data
     type_liste = config_data.get("type_liste")
-    filename = config_data.get("nom_fichier")
+    filename = config_data.get("nom_fichier").strip().lower().replace(" ", "-")
     description = config_data.get("description")
     proprietaires = config_data.get("proprietaires")
     editeurs = config_data.get("editeurs", [])
