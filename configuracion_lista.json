@@ -1,0 +1,15 @@
+{
+  "tipo_lista": "proto-modr",
+  "descripcion": "Lista de prueba para el prototipo de moderación",
+  "propietarios": [
+    "owner1@example.com",
+    "owner2@example.com",
+    "owner3@example.com"
+  ],
+  "editores": [
+    "editor11@example.com"
+  ],
+  "moderadores": [
+    "moderator11@example.com"
+  ]
+}

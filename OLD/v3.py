@@ -1,3 +1,6 @@
+# Starting with the constants module
+
+constants = """
 from pathlib import Path
 
 # Constants
@@ -23,9 +26,17 @@ COMMON_CONTENT = [
     "* Validate= No"
 ]
 COMMON_FOOTER_CONTENT = ["* .HH OFF", "*"]
+"""
 
+# ProtoConfig and derived classes
+
+proto_config = """
+from constants import MAX_LINE_LENGTH, COMMON_HEADER_CONTENT, COMMON_CONTENT, COMMON_FOOTER_CONTENT
+from pathlib import Path
 
 class ProtoConfig:
+    \"\"\"Base class representing a prototype configuration.\"\"\"
+
     def __init__(self, description, owners, has_notebook=False):
         self._description = description
         self._owners = owners
@@ -34,6 +45,7 @@ class ProtoConfig:
         self._has_notebook = has_notebook
 
     def _group_emails_in_lines(self, label, emails):
+        \"\"\"Groups emails into lines with a max length.\"\"\"
         lines = []
         current_line = label
         for email in emails:
@@ -57,43 +69,40 @@ class ProtoConfig:
             COMMON_HEADER_CONTENT[:1] +
             ["* " + self._description] +
             COMMON_HEADER_CONTENT[1:] +
-            COMMON_CONTENT +
+            [subject_tag] +
             owner_content +
             editor_content +
             moderator_content +
-            self.specific_content()
+            COMMON_CONTENT +
+            (["* Notebook= " + str(BASE_NOTEBOOK_PATH / f"{list_name}.html")] if self._has_notebook else []) +
+            self.specific_content() +
+            COMMON_FOOTER_CONTENT
         )
-
-        if self._has_notebook:
-            content += [
-                "* Digest= Yes,Same,Monthly",
-                f"* Notebook= Yes,{BASE_NOTEBOOK_PATH / list_name},Monthly",
-                "* Notebook= Private"
-            ]
-        else:
-            content.append("* Notebook= No")
-
-        content += [subject_tag] + COMMON_FOOTER_CONTENT
-        sorted_content = content[:2] + sorted(content[2:-2], key=lambda x: (x[0] != '*', x)) + content[-2:]
-        return sorted_content
+        return content
 
     def specific_content(self):
-        raise NotImplementedError("Subclasses should implement this method.")
-
+        \"\"\"Specific content for this configuration. To be overridden by derived classes.\"\"\"
+        return []
 
 class ProtoDiffusion(ProtoConfig):
+    \"\"\"Class representing a ProtoDiffusion configuration.\"\"\"
+
     def specific_content(self):
         return [
-            "* Reply-To= Sender,Respect",
-            "* Review= Owner",
-            "* Send= Owner",
-            "* Send= Confirm"
+            "* Reply-To= List,Respect",
+            "* Review= Private",
+            "* Send= Private"
         ]
 
 class ProtoDiffusionArch(ProtoDiffusion):
+    \"\"\"Class representing a ProtoDiffusion with archives configuration.\"\"\"
+
     def __init__(self, description, owners):
         super().__init__(description, owners, has_notebook=True)
+
 class ProtoDistr(ProtoConfig):
+    \"\"\"Class representing a ProtoDistr configuration.\"\"\"
+
     def __init__(self, description, owners):
         super().__init__(description, owners, has_notebook=True)
 
@@ -105,6 +114,8 @@ class ProtoDistr(ProtoConfig):
         ]
 
 class ProtoModr(ProtoDiffusion):
+    \"\"\"Class representing a ProtoModr configuration.\"\"\"
+
     def __init__(self, description, owners, editors, moderators):
         super().__init__(description, owners, has_notebook=True)
         self._editors = editors
@@ -117,15 +128,28 @@ class ProtoModr(ProtoDiffusion):
             "* Review= Private",
             "* Send= Editor,Hold,Confirm"
         ]
+"""
+
+# ListFileWriter class
+
+list_file_writer = """
 class ListFileWriter:
+    \"\"\"Class to write list content to a file.\"\"\"
+
     @staticmethod
     def save(filename, content):
         try:
             with open(filename, 'w') as f:
-                f.write('\n'.join(content))
+                f.write('\\n'.join(content))
         except Exception as e:
             print(f"Error writing to file {filename}: {e}")
+"""
 
+# Main function
+
+main_function = """
+from proto_config import ProtoDiffusion, ProtoDiffusionArch, ProtoDistr, ProtoModr
+from list_file_writer import ListFileWriter
 
 def main():
     lists = {
@@ -144,15 +168,20 @@ def main():
 
     for filename, list_cls in lists.items():
         description = descriptions[filename]
-        if list_cls == ProtoModr:
-            list_obj = list_cls(description,
-                                ["owner1@test.com", "owner2@test.com"],
-                                ["editor@test.com"],
-                                ["moderator@test.com"])
-        else:
-            list_obj = list_cls(description, ["owner1@test.com", "owner2@test.com"])
+        list_obj = create_list_obj(list_cls, description)
         content = list_obj.generate_content(filename)
         ListFileWriter.save(filename, content)
 
+def create_list_obj(list_cls, description):
+    \"\"\"Factory method to create list objects.\"\"\"
+    if list_cls == ProtoModr:
+        return list_cls(description,
+                        ["owner1@test.com", "owner2@test.com"],
+                        ["editor@test.com"],
+                        ["moderator@test.com"])
+    else:
+        return list_cls(description, ["owner1@test.com", "owner2@test.com"])
+
 if __name__ == "__main__":
     main()
+
