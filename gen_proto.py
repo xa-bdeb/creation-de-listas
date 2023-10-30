@@ -1,3 +1,8 @@
+from pathlib import Path
+
+# Constants
+BASE_NOTEBOOK_PATH = Path("/home/listserv/lists/archives")
+MAX_LINE_LENGTH = 80
 class ProtoConfig:
     def __init__(self, subject_tag, owner):
         # Common properties
@@ -17,19 +22,6 @@ class ProtoConfig:
         self.confidential = "Yes"
         self.subject_tag = subject_tag
         self.owner = owner
-        self.notebook_active = None
-        self.notebook_path = None
-        self.notebook_frequency = None
-
-    def set_notebook(self, active, path=None, frequency=None):
-        self.notebook_active = active
-        self.notebook_path = path
-        self.notebook_frequency = frequency
-
-    def get_notebook(self):
-        if self.notebook_active == "Yes":
-            return f"{self.notebook_active},{self.notebook_path},{self.notebook_frequency}"
-        return self.notebook_active
 
     def write_to_file(self, filename, description_line):
         with open(filename, 'w') as file:
@@ -37,9 +29,6 @@ class ProtoConfig:
             file.write(generate_header(description_line))
             file.write("* .HH ON\n")
             for key in sorted(vars(self)):
-                if key == "notebook_active":
-                    file.write(f'* Notebook= {self.get_notebook()}\n')
-                else:
                     file.write(f'* {key.replace("_", "-").title()}= {vars(self)[key]}\n')
             file.write("* .HH OFF\n")
             file.write("*\n")
@@ -53,7 +42,6 @@ class ProtoDistr(ProtoConfig):
         self.send = "Private"
         self.reply_to = "List,Respect"
         self.review = "Private"
-        self.set_notebook("Yes", "/home/listserv/lists/archives/proto-distr", "Monthly")
 
 class ProtoStd(ProtoConfig):
     def __init__(self):
@@ -61,7 +49,6 @@ class ProtoStd(ProtoConfig):
         self.send = "Owner"
         self.reply_to = "Sender,Respect"
         self.review = "Owner"
-        self.notebook_active = "No"
 
 class ProtoStdArch(ProtoConfig):
     def __init__(self):
@@ -69,7 +56,6 @@ class ProtoStdArch(ProtoConfig):
         self.send = "Confirm"
         self.reply_to = "Sender,Respect"
         self.review = "Owner"
-        self.set_notebook("Yes", "/home/listserv/lists/archives/proto-std-arch", "Monthly")
 
 class ProtoModr(ProtoConfig):
     def __init__(self):
@@ -77,7 +63,6 @@ class ProtoModr(ProtoConfig):
         self.send = "Editor,Hold,Confirm"
         self.reply_to = "List,Respect"
         self.review = "Private"
-        self.set_notebook("Yes", "/home/listserv/lists/archives/proto-modr", "Monthly")
 
 # Create instances and write to files
 proto_distr_instance = ProtoDistr()
