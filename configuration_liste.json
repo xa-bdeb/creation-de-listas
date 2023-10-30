@@ -1,0 +1,17 @@
+{
+    "type_liste": "proto-modr",
+    "nom_fichier": "ESTEesunTEst dsdsjhj ",
+    "description": "Lista de prueba para el prototipo de moderación",
+    "proprietaires": [
+        "owner1@example.com",
+        "owner2@example.com",
+        "owner3@example.com"
+    ],
+    "editeurs": [
+        "editor11@example.com"
+    ],
+    "moderateurs": [
+        "moderator11@example.com"
+    ]
+}
+

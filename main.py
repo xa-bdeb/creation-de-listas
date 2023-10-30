@@ -3,7 +3,7 @@ from proto_config import ProtoDiffusion, ProtoDiffusionArch, ProtoDistr, ProtoMo
 from list_file_writer import ListFileWriter
 
 
-def read_list_configuration(file_path="configuracion_lista.json"):
+def read_list_configuration(file_path="configuration_liste.json"):
     with open(file_path, 'r') as file:
         config_data = json.load(file)
     return config_data
