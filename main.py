@@ -14,6 +14,7 @@ def main():
 
     # Extracting necessary data from config_data
     tipo_lista = config_data.get("tipo_lista")
+    filename = config_data.get("nombre_archivo")
     descripcion = config_data.get("descripcion")
     propietarios = config_data.get("propietarios")
     editores = config_data.get("editores", [])
@@ -36,9 +37,8 @@ def main():
         list_obj = list_cls(descripcion, propietarios)
 
     # Generating content and saving
-    content = list_obj.generate_content(tipo_lista + ".txt")
-    ListFileWriter.save(tipo_lista + ".txt", content)
-
+    content = list_obj.generate_content(filename)
+    ListFileWriter.save(filename, content)
 
 if __name__ == "__main__":
     main()

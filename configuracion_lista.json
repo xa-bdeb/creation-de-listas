@@ -1,5 +1,6 @@
 {
   "tipo_lista": "proto-modr",
+  "nombre_archivo": "nombre_personalizado.txt",
   "descripcion": "Lista de prueba para el prototipo de moderación",
   "propietarios": [
     "owner1@example.com",
