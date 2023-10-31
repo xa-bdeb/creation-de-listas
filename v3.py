@@ -255,7 +255,6 @@ def main():
 
     # Generating content and saving
     content = list_obj.generate_content(filename)
-	#ListFileWriter.save(filename, content)
     create_list_file(Path(filename), "\n".join(content), user="listserv", group="users")
 
 
