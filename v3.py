@@ -1,4 +1,7 @@
 from pathlib import Path
+import os
+import shutil
+import logging
 from enum import Enum
 
 class ListType(Enum):
@@ -11,6 +14,30 @@ class ListType(Enum):
 # Constantes
 BASE_NOTEBOOK_PATH = Path("/home/listserv/lists/archives")
 MAX_LINE_LENGTH = 80
+
+
+def load_config(config_file):
+    try:
+        with open(config_file, "r", encoding="utf-8") as file:
+            return yaml.safe_load(file)
+    except FileNotFoundError:
+        logging.error("Le fichier de configuration est introuvable.")
+    except yaml.YAMLError as e:
+        logging.error(f"Erreur lors de la lecture du fichier de configuration : {str(e)}")
+    raise SystemExit
+
+def create_directory(path, user="listserv", group="users"):
+    if not path.exists():
+        path.mkdir(parents=True, exist_ok=True)
+    else:
+        logging.warning(f"Le répertoire {path} existe déjà. On va maj le propriétaire du répertoire.")
+    #shutil.chown(path, user=user, group=group)
+
+def create_list_file(path, content, user="listserv", group="users"):
+    with path.open("w") as file:
+        file.write(content)
+    # shutil.chown(path, user=user, group=group)
+    # path.chmod(0o644)
 
 # Contenu commun pour toutes les listes
 COMMON_HEADER_CONTENT = ["*", "*", "*", "* .HH ON"]
@@ -39,7 +66,7 @@ class ListFileWriter:
     @staticmethod
     def save(filename, content):
         try:
-            with open(filename, 'w') as f:
+            with Path(filename).open('w') as f:
                 f.write('\n'.join(content))
         except Exception as e:
             print(f"Erreur lors de l'écriture dans le fichier {filename}: {e}")
@@ -47,6 +74,9 @@ class ListFileWriter:
 
 # from constants import MAX_LINE_LENGTH, COMMON_HEADER_CONTENT, COMMON_CONTENT, COMMON_FOOTER_CONTENT, BASE_NOTEBOOK_PATH
 from pathlib import Path
+import os
+import shutil
+import logging
 from enum import Enum
 
 class ListType(Enum):
@@ -83,6 +113,19 @@ class ProtoConfig:
     def generate_content(self, filename):
         list_name = Path(filename).stem
         list_name_upper = list_name.upper()
+
+        paths = {
+            "listes": Path('./listes'),
+            "archives": Path('./archives'),
+            "www": Path('./www/html/archives')
+        }
+
+        archive_dir = paths["archives"] / list_name
+        www_dir = paths["www"] / list_name
+
+        create_directory(archive_dir)
+        create_directory(www_dir)
+
         subject_tag = f'* Subject-Tag= "{list_name_upper}"'
         owner_content = self._group_emails_in_lines("* Owner= ", self._owners)
         editor_content = self._group_emails_in_lines("* Editor= ", self._editors) if self._editors else []
@@ -212,7 +255,8 @@ def main():
 
     # Generating content and saving
     content = list_obj.generate_content(filename)
-    ListFileWriter.save(filename, content)
+	#ListFileWriter.save(filename, content)
+    create_list_file(Path(filename), "\n".join(content), user="listserv", group="users")
 
 
 if __name__ == "__main__":
