@@ -1,4 +1,12 @@
 from pathlib import Path
+from enum import Enum
+
+class ListType(Enum):
+    PROTO_STD = "proto-std"
+    PROTO_STD_ARCH = "proto-std-arch"
+    PROTO_DISTR = "proto-distr"
+    PROTO_MODR = "proto-modr"
+
 
 # Constantes
 BASE_NOTEBOOK_PATH = Path("/home/listserv/lists/archives")
@@ -39,6 +47,14 @@ class ListFileWriter:
 
 # from constants import MAX_LINE_LENGTH, COMMON_HEADER_CONTENT, COMMON_CONTENT, COMMON_FOOTER_CONTENT, BASE_NOTEBOOK_PATH
 from pathlib import Path
+from enum import Enum
+
+class ListType(Enum):
+    PROTO_STD = "proto-std"
+    PROTO_STD_ARCH = "proto-std-arch"
+    PROTO_DISTR = "proto-distr"
+    PROTO_MODR = "proto-modr"
+
 
 
 class ProtoConfig:
@@ -168,7 +184,10 @@ def main():
     config_data = read_list_configuration()
 
     # Extracting necessary data from config_data
-    type_liste = config_data.get("type_liste")
+    type_liste = config_data.get("type_liste").lower()
+    if type_liste not in [e.value for e in ListType]:
+        print(f"Error: tipo de lista no válido. Debe ser uno de: {', '.join([e.value for e in ListType])}")
+        exit(1)
     filename = config_data.get("nom_fichier").strip().lower().replace(" ", "-")
     description = config_data.get("description")
     proprietaires = config_data.get("proprietaires")
